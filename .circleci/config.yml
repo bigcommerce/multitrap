@@ -1,0 +1,111 @@
+version: 2.1
+
+ruby_env: &ruby_env
+  working_directory: ~/repo
+  environment:
+    BUNDLE_JOBS: 4
+    BUNDLE_RETRY: 3
+    BUNDLE_PATH: vendor/bundle
+    RACK_ENV: test
+    RAILS_ENV: test
+    RUBY_VERSION: <<parameters.ruby-version>>
+  docker:
+    - image: circleci/<<parameters.ruby-version>>
+
+executors:
+  ruby_2_4:
+    <<: *ruby_env
+    parameters:
+      ruby-version:
+        type: string
+        default: "ruby:2.4.6"
+  ruby_2_5:
+    <<: *ruby_env
+    parameters:
+      ruby-version:
+        type: string
+        default: "ruby:2.5.5"
+  ruby_2_6:
+    <<: *ruby_env
+    parameters:
+      ruby-version:
+        type: string
+        default: "ruby:2.6.3"
+  ruby_2_7_rc:
+    <<: *ruby_env
+    parameters:
+      ruby-version:
+        type: string
+        default: "ruby:2.7-rc"
+  jruby_9_2:
+    <<: *ruby_env
+    parameters:
+      ruby-version:
+        type: string
+        default: "jruby:9.2"
+
+commands:
+  pre-setup:
+    steps:
+      - add_ssh_keys
+      - checkout
+  bundle-install:
+    steps:
+      - restore_cache:
+          keys:
+            - gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+            - gem-cache-{{ arch }}-{{ .Branch }}
+            - gem-cache
+      - run: bundle check || bundle install --path vendor/bundle
+      - save_cache:
+          key: gem-cache-{{ arch }}-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+          paths:
+            - vendor/bundle
+  rspec-unit:
+    parameters:
+      additional_args:
+        type: string
+        default: ""
+      glob:
+        type: string
+        default: ""
+    steps:
+      - run: mkdir ~/rspec
+      - run:
+          name: "Run rspec tests"
+          command: |
+            TESTFILES=$(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+            echo "Running: ${TESTFILES}"
+            bundle exec rspec --format progress --format RspecJunitFormatter -o ~/rspec/rspec.xml <<parameters.additional_args>> -- ${TESTFILES}
+          when: always
+      - store_test_results:
+          path: ~/rspec
+
+jobs:
+  rspec-unit:
+    executor: <<parameters.e>>
+    parameters:
+      e:
+        type: executor
+        default: "ruby_2_6"
+    steps:
+      - pre-setup
+      - bundle-install
+      - rspec-unit
+
+workflows:
+  version: 2
+  full:
+    jobs:
+      - rspec-unit:
+          name: "ruby-2_4-rspec"
+          e: "ruby_2_4"
+      - rspec-unit:
+          name: "ruby-2_5-rspec"
+          e: "ruby_2_5"
+      - rspec-unit:
+          name: "ruby-2_6-rspec"
+          e: "ruby_2_6"
+      - rspec-unit:
+          name: "ruby-2_7_rc-rspec"
+          e: "ruby_2_7_rc"
