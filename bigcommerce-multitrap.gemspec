@@ -8,15 +8,10 @@ Gem::Specification.new do |s|
   s.authors      = ['Kyrylo Silin', 'Shaun McCormick']
   s.email        = %w[silin@kyrylo.org shaun.mccormick@bigcommerce.com]
   s.homepage     = 'https://github.com/kyrylo/multitrap'
-  s.licenses     = 'Zlib'
+  s.licenses     = 'MIT'
 
-  s.require_path = 'lib'
-  s.files        = %w[
-    lib/multitrap/core_ext.rb
-    lib/multitrap/patched_trap.rb
-    lib/multitrap/trap.rb
-    lib/multitrap.rb
-  ]
+  s.files         = Dir['README.md', 'CHANGELOG.md', 'CODE_OF_CONDUCT.md', 'lib/**/*', 'bigcommerce-multitrap.gemspec']
+  s.require_paths = ['lib']
   s.test_files   = s.files.grep(%r{^(test|spec|features)/})
 
   s.add_development_dependency 'pry', '~> 0.12'
