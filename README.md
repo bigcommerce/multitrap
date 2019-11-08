@@ -1,7 +1,7 @@
 Multitrap
 =========
 
-[![Build Status](https://travis-ci.org/kyrylo/multitrap.svg?branch=v0.1.0)](https://travis-ci.org/kyrylo/multitrap)
+[![CircleCI](https://circleci.com/gh/bigcommerce/multitrap.svg?style=svg&circle-token=dc30a5b0d61a77d3547b795cca663e9309cf8cc0)](https://circleci.com/gh/bigcommerce/multitrap)
 
 Introduction
 ------------
@@ -24,7 +24,7 @@ needed. Internally, the library _redefines_ `trap`. The last defined signal
 handler executes first.
 
 ```ruby
-require 'multitrap'
+require 'bigcommerce/multitrap'
 
 trap(:INT) { puts 111 }
 trap(:INT) { puts 222 }
@@ -45,7 +45,7 @@ JRuby doesn't support nested traps, but Rubinius and CRuby do. Multitrap obeys
 this behaviour.
 
 ```ruby
-require 'multitrap'
+require 'bigcommerce/multitrap'
 
 a = nil
 
@@ -76,7 +76,7 @@ With Multitrap, the `trap` method returns a hash with callbacks.
 
 ```ruby
 require 'pp'
-require 'multitrap'
+require 'bigcommerce/multitrap'
 
 trap(:INT) {}
 trap(:HUP) {}
